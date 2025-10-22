@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { CrisisModal, detectCrisisKeywords } from '@/components/CrisisModal';
 
 export default function ApplyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showCrisisModal, setShowCrisisModal] = useState(false);
   const [formData, setFormData] = useState({
     parentName: '',
     parentEmail: '',
@@ -62,6 +64,13 @@ export default function ApplyPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Check for crisis keywords in issues and notes fields
+    if (name === 'issues' || name === 'notes') {
+      if (detectCrisisKeywords(value)) {
+        setShowCrisisModal(true);
+      }
+    }
   };
 
   const handleDayToggle = (day: string) => {
@@ -345,6 +354,13 @@ export default function ApplyPage() {
           </div>
         </form>
       </div>
+
+      {/* Crisis Detection Modal */}
+      <CrisisModal
+        isOpen={showCrisisModal}
+        onClose={() => setShowCrisisModal(false)}
+        onContinue={() => setShowCrisisModal(false)}
+      />
     </div>
   );
 }
