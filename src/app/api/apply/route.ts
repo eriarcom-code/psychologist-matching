@@ -74,21 +74,20 @@ export async function POST(request: NextRequest) {
       success: true,
       applicationId,
       topProviders: scoringResults.map((result) => {
-        // Find full provider data
-        const provider = providers.find((p) => p.id === result.providerId);
         return {
-          ...result,
-          provider: provider ? {
-            name: provider.name,
-            bio: provider.bio,
-            price: provider.price,
-            rating: provider.rating,
-            verified: provider.verified,
-            approaches: provider.approaches,
-            specializations: provider.specializations,
-            contacts: provider.contacts,
-            availability: provider.availability,
-          } : null,
+          score: result.score,
+          breakdown: result.breakdown,
+          provider: {
+            name: result.provider.name,
+            bio: result.provider.bio,
+            price: result.provider.price,
+            rating: result.provider.rating,
+            verified: result.provider.verified,
+            approaches: result.provider.approaches,
+            specializations: result.provider.specializations,
+            contacts: result.provider.contacts,
+            availability: result.provider.availability,
+          },
         };
       }),
     });
