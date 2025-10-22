@@ -32,7 +32,7 @@ function getAuthClient() {
  */
 async function getSheetsClient() {
   const auth = await getAuthClient().getClient();
-  return google.sheets({ version: 'v4', auth });
+  return google.sheets({ version: 'v4', auth: auth as any });
 }
 
 /**
@@ -62,7 +62,7 @@ function parseProvidersFromRows(rows: any[][]): Provider[] {
   return rows.map((row) => {
     // Parse availability string: "Monday 14:00-18:00,Wednesday 14:00-20:00"
     const availabilityStr = row[17] || '';
-    const availability = availabilityStr.split(',').filter(s => s.trim()).map(slot => {
+    const availability = availabilityStr.split(',').filter((s: string) => s.trim()).map((slot: string) => {
       const parts = slot.trim().split(' ');
       if (parts.length === 2) {
         const day = parts[0];
@@ -144,22 +144,30 @@ export async function getConfig(): Promise<Config> {
       minRating: parseFloat(configMap.required_min_rating) || 4.0,
     },
     emailTemplates: {
-      providerInquiry: configMap.email_template_inquiry || 'Default template',
-      parentConfirmation: configMap.email_template_confirmation || 'Default template',
-      sessionReminder: configMap.email_template_reminder || 'Default template',
+      providerInquiry: {
+        subject: 'Новая заявка на консультацию',
+        body: configMap.email_template_inquiry || 'Default template',
+        variables: ['parentName', 'childAge', 'issues'],
+      },
+      parentConfirmation: {
+        subject: 'Ваша заявка принята',
+        body: configMap.email_template_confirmation || 'Default template',
+        variables: ['parentName'],
+      },
+      sessionReminder: {
+        subject: 'Напоминание о консультации',
+        body: configMap.email_template_reminder || 'Default template',
+        variables: ['parentName', 'dateTime'],
+      },
     },
-    asanaConfig: {
-      logNewApplications: configMap.asana_log_applications === 'true',
-      logScoringResults: configMap.asana_log_scoring === 'true',
-      logEmailsSent: configMap.asana_log_emails === 'true',
-    },
-    calendarConfig: {
-      sessionDuration: parseInt(configMap.calendar_session_duration) || 60,
-      bufferBetweenSessions: parseInt(configMap.calendar_buffer) || 15,
+    asana: {
+      taskId: configMap.asana_task_id || '',
+      workspaceGid: configMap.asana_workspace_gid || '',
+      customFieldsMap: {},
     },
     featureFlags: {
-      emailAutomation: configMap.feature_email === 'true',
-      telegramBot: configMap.feature_telegram === 'true',
+      autoEmail: configMap.feature_email === 'true',
+      telegram: configMap.feature_telegram === 'true',
       payments: configMap.feature_payments === 'true',
     },
   };

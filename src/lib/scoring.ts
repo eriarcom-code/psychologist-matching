@@ -62,11 +62,16 @@ export function calculateScore(
   scores.specialization = specializationBonus;
 
   return {
-    providerId: provider.id,
-    providerName: provider.name,
-    totalScore: Math.round(totalScore * 100) / 100,
-    breakdown: scores,
-    reasons: generateMatchReasons(provider, scores),
+    provider: provider,
+    score: Math.round(totalScore * 100) / 100,
+    breakdown: {
+      language: scores.language || 0,
+      approach: scores.cbt || 0,
+      price: scores.price || 0,
+      rating: scores.rating || 0,
+      verified: scores.verified || 0,
+      experience: scores.experience || 0,
+    },
   };
 }
 
@@ -98,7 +103,7 @@ export function scoreAndRank(
   );
 
   // Sort by total score descending
-  scored.sort((a, b) => b.totalScore - a.totalScore);
+  scored.sort((a, b) => b.score - a.score);
 
   // Return top N
   return scored.slice(0, topN);
@@ -254,12 +259,11 @@ export function formatScoringResults(results: ScoringResult[]): string {
   let output = `🎯 ТОП-${results.length} ПСИХОЛОГОВ\n\n`;
 
   results.forEach((result, index) => {
-    output += `${index + 1}. ${result.providerName}\n`;
-    output += `   Общий балл: ${result.totalScore.toFixed(2)}\n`;
-    output += `   Причины:\n`;
-    result.reasons.forEach((reason) => {
-      output += `   • ${reason}\n`;
-    });
+    output += `${index + 1}. ${result.provider.name}\n`;
+    output += `   Общий балл: ${result.score.toFixed(2)}\n`;
+    output += `   Рейтинг: ${result.provider.rating}/5.0\n`;
+    output += `   Опыт: ${result.provider.experience} лет\n`;
+    output += `   Цена: ${result.provider.price.amount} ${result.provider.price.currency}\n`;
     output += '\n';
   });
 

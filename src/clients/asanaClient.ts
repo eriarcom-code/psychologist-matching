@@ -1,20 +1,35 @@
 /**
  * Asana Client - Log activities to task comments
+ * Currently disabled - asana package has compatibility issues
  */
 
-import * as asana from 'asana';
+const ASANA_ENABLED = false; // Temporarily disabled due to package compatibility issues
 
-const client = asana.Client.create({
-  defaultHeaders: { 'asana-enable': 'new_user_task_lists' },
-}).useAccessToken(process.env.ASANA_PAT!);
+let client: any = null;
+const TASK_ID = process.env.ASANA_TASK_ID || '';
+const WORKSPACE_GID = process.env.ASANA_WORKSPACE_GID || '';
 
-const TASK_ID = process.env.ASANA_TASK_ID!;
-const WORKSPACE_GID = process.env.ASANA_WORKSPACE_GID!;
+// Initialize client only if enabled
+if (ASANA_ENABLED) {
+  try {
+    // @ts-ignore - asana package doesn't have TypeScript definitions
+    const asana = require('asana');
+    client = asana.Client.create({
+      defaultHeaders: { 'asana-enable': 'new_user_task_lists' },
+    }).useAccessToken(process.env.ASANA_PAT!);
+  } catch (error) {
+    console.warn('⚠️ Asana client initialization failed:', error);
+  }
+}
 
 /**
  * Post comment to Asana task
  */
 export async function postComment(text: string): Promise<void> {
+  if (!ASANA_ENABLED || !client) {
+    console.log('ℹ️ Asana disabled - would have posted:', text.substring(0, 100) + '...');
+    return;
+  }
   try {
     await client.tasks.addComment(TASK_ID, {
       text,
@@ -22,7 +37,7 @@ export async function postComment(text: string): Promise<void> {
     console.log('✅ Posted to Asana:', text.substring(0, 100) + '...');
   } catch (error) {
     console.error('❌ Failed to post to Asana:', error);
-    throw error;
+    // Don't throw - logging should not break the main flow
   }
 }
 
@@ -143,6 +158,10 @@ export async function updateCustomField(
   fieldGid: string,
   value: string | number
 ): Promise<void> {
+  if (!ASANA_ENABLED || !client) {
+    console.log(`ℹ️ Asana disabled - would have updated field ${fieldGid} to ${value}`);
+    return;
+  }
   try {
     await client.tasks.update(TASK_ID, {
       custom_fields: {
@@ -152,7 +171,7 @@ export async function updateCustomField(
     console.log(`✅ Updated custom field ${fieldGid} to ${value}`);
   } catch (error) {
     console.error('❌ Failed to update custom field:', error);
-    throw error;
+    // Don't throw - logging should not break the main flow
   }
 }
 
@@ -160,11 +179,15 @@ export async function updateCustomField(
  * Get task details
  */
 export async function getTask(): Promise<any> {
+  if (!ASANA_ENABLED || !client) {
+    console.log('ℹ️ Asana disabled - cannot get task');
+    return null;
+  }
   try {
     const task = await client.tasks.findById(TASK_ID);
     return task;
   } catch (error) {
     console.error('❌ Failed to get task:', error);
-    throw error;
+    return null;
   }
 }

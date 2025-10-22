@@ -27,7 +27,7 @@ function getAuthClient() {
  */
 async function getCalendarClient() {
   const auth = await getAuthClient().getClient();
-  return google.calendar({ version: 'v3', auth });
+  return google.calendar({ version: 'v3', auth: auth as any });
 }
 
 /**
