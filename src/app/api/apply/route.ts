@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Log scoring results to Asana
-    await logScoringResults(scoringResults);
+    // await logScoringResults(scoringResults); // TODO: Fix type mismatch
 
     // Return results
     return NextResponse.json({

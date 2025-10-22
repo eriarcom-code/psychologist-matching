@@ -2,7 +2,7 @@
  * Asana Client - Log activities to task comments
  */
 
-import asana from 'asana';
+import * as asana from 'asana';
 
 const client = asana.Client.create({
   defaultHeaders: { 'asana-enable': 'new_user_task_lists' },
